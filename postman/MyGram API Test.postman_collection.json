@@ -1,0 +1,4222 @@
+{
+	"info": {
+		"_postman_id": "ef0b2cfa-9e6e-4c98-9a6f-73326395da7c",
+		"name": "MyGram API Test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "16992425"
+	},
+	"item": [
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Register",
+					"item": [
+						{
+							"name": "Register User with Valid Payload",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('should response 201 status code', () => {\r",
+											"    pm.response.to.have.status(201);\r",
+											"});\r",
+											"\r",
+											"pm.test('should response with correct property and message', () => {\r",
+											"    const responseJson = pm.response.json();\r",
+											"\r",
+											"    pm.expect(responseJson).to.be.an('object');\r",
+											"    pm.expect(responseJson.status).to.be.a('string');\r",
+											"    pm.expect(responseJson.data).to.be.an('object');\r",
+											"    pm.expect(responseJson.data.age).to.be.an('number');\r",
+											"    pm.expect(responseJson.data.email).to.be.a('string');\r",
+											"    pm.expect(responseJson.data.id).to.be.a('string');\r",
+											"    pm.expect(responseJson.data.username).to.be.a('string');\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"age\": {{newAge}},\r\n    \"username\": \"{{newUsername}}_{{$timestamp}}\",\r\n    \"password\": \"{{newPassword}}\",\r\n    \"email\": \"{{$timestamp}}_{{newEmail}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}:{{port}}/users/register",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"users",
+										"register"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Register User with Bad Payload",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"let badRegisterPayloads = pm.environment.get('badRegisterPayloads');\r",
+											"\r",
+											"if (!badRegisterPayloads || badRegisterPayloads.length === 0) {\r",
+											"    badRegisterPayloads = [\r",
+											"        {},\r",
+											"        { age: 8, username: 'johndoe' },\r",
+											"        { age: 8, username: 123, email: 'johndoe@example.com', password: 'secret', },\r",
+											"        { age: 7, username: 'johndoe', email: 'johndoe@example.com', password: 'secret', },\r",
+											"        { age: 8, username: 'johndoe', email: 'johndoe@example.com', password: 'scrt', }\r",
+											"    ];\r",
+											"}\r",
+											"\r",
+											"const currentBadRegisterPayload = badRegisterPayloads.shift();\r",
+											"\r",
+											"pm.environment.set('currentBadRegisterPayload', JSON.stringify(currentBadRegisterPayload));\r",
+											"pm.environment.set('badRegisterPayloads', badRegisterPayloads);"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('response status code should have 400 value', () => {\r",
+											"   pm.response.to.have.status(400);\r",
+											"}); \r",
+											"\r",
+											"pm.test('response body should have correct property and value', () => {\r",
+											"    const responseJson = pm.response.json();\r",
+											"\r",
+											"    pm.expect(responseJson).to.be.an('object');\r",
+											"    pm.expect(responseJson.status).to.equals('fail');\r",
+											"    pm.expect(responseJson.message).to.be.a('string');\r",
+											"    pm.expect(responseJson.message).to.not.equals('');\r",
+											"    pm.expect(responseJson.message).to.not.equals(null);\r",
+											"});\r",
+											"\r",
+											"const repeatRequestUntilDatasetEmpty = () => {\r",
+											"    const badRegisterPayloads = pm.environment.get('badRegisterPayloads');\r",
+											" \r",
+											"    if(badRegisterPayloads && badRegisterPayloads.length > 0) {\r",
+											"        postman.setNextRequest('Register User with Bad Payload');\r",
+											"    }\r",
+											"}\r",
+											" \r",
+											"repeatRequestUntilDatasetEmpty();"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{{currentBadRegisterPayload}}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}:{{port}}/users/register",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"users",
+										"register"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Register User with Exist Username",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const protocol = pm.environment.get('protocol');\r",
+											"const host = pm.environment.get('host');\r",
+											"const port = pm.environment.get('port');\r",
+											"\r",
+											"const postRequest = {\r",
+											"    url: `${protocol}://${host}:${port}/users/register`,\r",
+											"    method: 'POST',\r",
+											"    header: {\r",
+											"        'Content-Type': 'application/json',\r",
+											"    },\r",
+											"    body: {\r",
+											"        mode: 'raw',\r",
+											"        raw: JSON.stringify({\r",
+											"            age: parseInt(pm.environment.get('newAge')),\r",
+											"            username: pm.environment.get('newUsername'),\r",
+											"            password: pm.environment.get('newPassword'),\r",
+											"            email: pm.environment.get('newEmail')\r",
+											"        }),\r",
+											"    },\r",
+											"};\r",
+											"\r",
+											"pm.sendRequest(postRequest, (error, response) => {\r",
+											"    console.log(error ? error : response.json());\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('should response 409 status code', () => {\r",
+											"    pm.response.to.have.status(409);\r",
+											"});\r",
+											"\r",
+											"pm.test('should response with correct property and message', () => {\r",
+											"    const responseJson = pm.response.json();\r",
+											"    \r",
+											"    pm.expect(responseJson).to.be.an('object');\r",
+											"    pm.expect(responseJson.status).to.equals('fail');\r",
+											"    pm.expect(responseJson.message).to.be.a('string');\r",
+											"    pm.expect(responseJson.message).to.not.equals('');\r",
+											"    pm.expect(responseJson.message).to.not.equals(null);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"age\": {{newAge}},\r\n    \"username\": \"{{newUsername}}\",\r\n    \"password\": \"{{newPassword}}\",\r\n    \"email\": \"{{$timestamp}}_{{newEmail}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}:{{port}}/users/register",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"users",
+										"register"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Register User with Exist Email",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const protocol = pm.environment.get('protocol');\r",
+											"const host = pm.environment.get('host');\r",
+											"const port = pm.environment.get('port');\r",
+											"\r",
+											"const postRequest = {\r",
+											"    url: `${protocol}://${host}:${port}/users/register`,\r",
+											"    method: 'POST',\r",
+											"    header: {\r",
+											"        'Content-Type': 'application/json',\r",
+											"    },\r",
+											"    body: {\r",
+											"        mode: 'raw',\r",
+											"        raw: JSON.stringify({\r",
+											"            age: parseInt(pm.environment.get('newAge')),\r",
+											"            username: pm.environment.get('newUsername'),\r",
+											"            password: pm.environment.get('newPassword'),\r",
+											"            email: pm.environment.get('newEmail')\r",
+											"        }),\r",
+											"    },\r",
+											"};\r",
+											"\r",
+											"pm.sendRequest(postRequest, (error, response) => {\r",
+											"    console.log(error ? error : response.json());\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('should response 409 status code', () => {\r",
+											"    pm.response.to.have.status(409);\r",
+											"});\r",
+											"\r",
+											"pm.test('should response with correct property and message', () => {\r",
+											"    const responseJson = pm.response.json();\r",
+											"\r",
+											"    pm.expect(responseJson).to.be.an('object');\r",
+											"    pm.expect(responseJson.status).to.equals('fail');\r",
+											"    pm.expect(responseJson.message).to.be.a('string');\r",
+											"    pm.expect(responseJson.message).to.not.equals('');\r",
+											"    pm.expect(responseJson.message).to.not.equals(null);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"age\": {{newAge}},\r\n    \"username\": \"{{newUsername}}_{{$timestamp}}\",\r\n    \"password\": \"{{newPassword}}\",\r\n    \"email\": \"{{newEmail}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}:{{port}}/users/register",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"users",
+										"register"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Login",
+					"item": [
+						{
+							"name": "Login User with Valid Credential",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const protocol = pm.environment.get('protocol');\r",
+											"const host = pm.environment.get('host');\r",
+											"const port = pm.environment.get('port');\r",
+											"\r",
+											"const postRequest = {\r",
+											"    url: `${protocol}://${host}:${port}/users/register`,\r",
+											"    method: 'POST',\r",
+											"    header: {\r",
+											"        'Content-Type': 'application/json',\r",
+											"    },\r",
+											"    body: {\r",
+											"        mode: 'raw',\r",
+											"        raw: JSON.stringify({\r",
+											"            age: parseInt(pm.environment.get('newAge')),\r",
+											"            username: pm.environment.get('newUsername'),\r",
+											"            password: pm.environment.get('newPassword'),\r",
+											"            email: pm.environment.get('newEmail'),\r",
+											"        }),\r",
+											"    },\r",
+											"};\r",
+											"\r",
+											"pm.sendRequest(postRequest, (error, response) => {\r",
+											"    console.log(error ? error : response.json());\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('should response 200 status code', () => {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test('should respose with correct property and message', () => {\r",
+											"    const responseJson = pm.response.json();\r",
+											"\r",
+											"    pm.expect(responseJson).to.be.an('object');\r",
+											"    pm.expect(responseJson.status).to.be.a('string');\r",
+											"    pm.expect(responseJson.data).to.be.a('object');\r",
+											"    pm.expect(responseJson.data.token).to.be.a('string');\r",
+											"\r",
+											"    pm.environment.set('token', responseJson.data.token);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"email\": \"{{newEmail}}\",\r\n    \"password\": \"{{newPassword}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}:{{port}}/users/login",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"users",
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Login User with Bad Payload",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"let badLoginPayloads = pm.environment.get('badLoginPayloads');\r",
+											"\r",
+											"if (!badLoginPayloads || badLoginPayloads.length === 0) {\r",
+											"    badLoginPayloads = [\r",
+											"        {},\r",
+											"        { email: \"johndoe@example.com\" },\r",
+											"        { password: \"secret\", },\r",
+											"        { email: 8, password: \"secret\", },\r",
+											"    ];\r",
+											"}\r",
+											"\r",
+											"const currentBadLoginPayload = badLoginPayloads.shift();\r",
+											"\r",
+											"pm.environment.set('currentBadLoginPayload', JSON.stringify(currentBadLoginPayload));\r",
+											"pm.environment.set('badLoginPayloads', badLoginPayloads);"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('response status code should have 400 value', () => {\r",
+											"   pm.response.to.have.status(400);\r",
+											"}); \r",
+											"\r",
+											"pm.test('response body should have correct property and value', () => {\r",
+											"    const responseJson = pm.response.json();\r",
+											"\r",
+											"    pm.expect(responseJson).to.be.an('object');\r",
+											"    pm.expect(responseJson.status).to.be.a('string');\r",
+											"    pm.expect(responseJson.message).to.be.a('string');\r",
+											"    pm.expect(responseJson.message).to.not.equals('');\r",
+											"    pm.expect(responseJson.message).to.not.equals(null);\r",
+											"});\r",
+											"\r",
+											"const repeatRequestUntilDatasetEmpty = () => {\r",
+											"    const badLoginPayloads = pm.environment.get('badLoginPayloads');\r",
+											" \r",
+											"    if(badLoginPayloads && badLoginPayloads.length > 0) {\r",
+											"        postman.setNextRequest('Login User with Bad Payload');\r",
+											"    }\r",
+											"}\r",
+											" \r",
+											"repeatRequestUntilDatasetEmpty();"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{{currentBadLoginPayload}}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}:{{port}}/users/login",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"users",
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Login User with Invalid Email",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const protocol = pm.environment.get('protocol');\r",
+											"const host = pm.environment.get('host');\r",
+											"const port = pm.environment.get('port');\r",
+											"\r",
+											"const postRequest = {\r",
+											"    url: `${protocol}://${host}:${port}/users/register`,\r",
+											"    method: 'POST',\r",
+											"    header: {\r",
+											"        'Content-Type': 'application/json',\r",
+											"    },\r",
+											"    body: {\r",
+											"        mode: 'raw',\r",
+											"        raw: JSON.stringify({\r",
+											"            age: parseInt(pm.environment.get('newAge')),\r",
+											"            username: pm.environment.get('newUsername'),\r",
+											"            password: pm.environment.get('newPassword'),\r",
+											"            email: pm.environment.get('newEmail'),\r",
+											"        }),\r",
+											"    },\r",
+											"};\r",
+											"\r",
+											"pm.sendRequest(postRequest, (error, response) => {\r",
+											"    console.log(error ? error : response.json());\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('should response 400 status code', () => {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test('should respose with correct property and message', () => {\r",
+											"    const responseJson = pm.response.json();\r",
+											"\r",
+											"    pm.expect(responseJson).to.be.an('object');\r",
+											"    pm.expect(responseJson.status).to.equals('unauthenticated');\r",
+											"    pm.expect(responseJson.message).to.be.an('string');\r",
+											"    pm.expect(responseJson.message).to.not.equals('');\r",
+											"    pm.expect(responseJson.message).to.not.equals(null);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"email\": \"xxx@example.com\",\r\n    \"password\": \"{{newPassword}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}:{{port}}/users/login",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"users",
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Login User with Invalid Password",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const protocol = pm.environment.get('protocol');\r",
+											"const host = pm.environment.get('host');\r",
+											"const port = pm.environment.get('port');\r",
+											"\r",
+											"const postRequest = {\r",
+											"    url: `${protocol}://${host}:${port}/users/register`,\r",
+											"    method: 'POST',\r",
+											"    header: {\r",
+											"        'Content-Type': 'application/json',\r",
+											"    },\r",
+											"    body: {\r",
+											"        mode: 'raw',\r",
+											"        raw: JSON.stringify({\r",
+											"            age: parseInt(pm.environment.get('newAge')),\r",
+											"            username: pm.environment.get('newUsername'),\r",
+											"            password: pm.environment.get('newPassword'),\r",
+											"            email: pm.environment.get('newEmail'),\r",
+											"        }),\r",
+											"    },\r",
+											"};\r",
+											"\r",
+											"pm.sendRequest(postRequest, (error, response) => {\r",
+											"    console.log(error ? error : response.json());\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('should response 400 status code', () => {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test('should respose with correct property and message', () => {\r",
+											"    const responseJson = pm.response.json();\r",
+											"\r",
+											"    pm.expect(responseJson).to.be.an('object');\r",
+											"    pm.expect(responseJson.status).to.equals('unauthenticated');\r",
+											"    pm.expect(responseJson.message).to.be.an('string');\r",
+											"    pm.expect(responseJson.message).to.not.equals('');\r",
+											"    pm.expect(responseJson.message).to.not.equals(null);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"email\": \"{{newEmail}}\",\r\n    \"password\": \"xxx\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{host}}:{{port}}/users/login",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{host}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"users",
+										"login"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Update User with Authentication User and Valid Payload",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('it should response 200 status code', () => {\r",
+									"    pm.expect(pm.response).to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test('response Content-Type header should have application/json value', () => {\r",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.includes('application/json');\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should an object', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"});\r",
+									"\r",
+									"pm.test('response body should have correct property and value', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(responseJson.status).to.be.a('string');\r",
+									"    pm.expect(responseJson.data).to.be.a('object');\r",
+									"    pm.expect(responseJson.data.id).to.be.a('string');\r",
+									"    pm.expect(responseJson.data.email).to.be.a('string');\r",
+									"    pm.expect(responseJson.data.username).to.be.a('string');\r",
+									"    pm.expect(responseJson.data.age).to.be.a('number');\r",
+									"    pm.expect(responseJson.data.updated_at).to.be.a('string');\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const protocol = pm.environment.get('protocol');\r",
+									"const host = pm.environment.get('host');\r",
+									"const port = pm.environment.get('port');\r",
+									"\r",
+									"const postRequest = {\r",
+									"    url: `${protocol}://${host}:${port}/users/register`,\r",
+									"    method: 'POST',\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"    },\r",
+									"    body: {\r",
+									"        mode: 'raw',\r",
+									"        raw: JSON.stringify({\r",
+									"            age: parseInt(pm.environment.get('newAge')),\r",
+									"            username: pm.environment.get('newUsername'),\r",
+									"            password: pm.environment.get('newPassword'),\r",
+									"            email: pm.environment.get('newEmail'),\r",
+									"        }),\r",
+									"    },\r",
+									"};\r",
+									"\r",
+									"pm.sendRequest(postRequest, (error, response) => {\r",
+									"    console.log(error ? error : response.json());\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"{{$timestamp}}_johndoe@example.com\",\r\n    \"username\": \"newjohndoe_{{$timestamp}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/users",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update User with Authentication User and Bad Payload",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"let badUpdateUserPayloads = pm.environment.get('badUpdateUserPayloads');\r",
+									"\r",
+									"if (!badUpdateUserPayloads || badUpdateUserPayloads.length === 0) {\r",
+									"    badUpdateUserPayloads = [\r",
+									"        { email: 8, username: 'newjohndoe' },\r",
+									"        { email: \"newjohndoe@example.com\", username: 8 },\r",
+									"    ];\r",
+									"}\r",
+									"\r",
+									"const currentBadUpdateUserPayload = badUpdateUserPayloads.shift();\r",
+									"\r",
+									"pm.environment.set('currentBadUpdateUserPayload', JSON.stringify(currentBadUpdateUserPayload));\r",
+									"pm.environment.set('badUpdateUserPayloads', badUpdateUserPayloads);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('response status code should have 400 value', () => {\r",
+									"   pm.response.to.have.status(400);\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should have correct property and value', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.equals('fail');\r",
+									"    pm.expect(responseJson.message).to.be.a('string');\r",
+									"    pm.expect(responseJson.message).to.not.equals('');\r",
+									"    pm.expect(responseJson.message).to.not.equals(null);\r",
+									"});\r",
+									"\r",
+									"const repeatRequestUntilDatasetEmpty = () => {\r",
+									"    const badUpdateUserPayloads = pm.environment.get('badUpdateUserPayloads');\r",
+									" \r",
+									"    if(badUpdateUserPayloads && badUpdateUserPayloads.length > 0) {\r",
+									"        postman.setNextRequest('Update User with Authentication User and Bad Payload');\r",
+									"    }\r",
+									"}\r",
+									" \r",
+									"repeatRequestUntilDatasetEmpty();"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{currentBadUpdateUserPayload}}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/users",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update User without Authentication User",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const protocol = pm.environment.get('protocol');\r",
+									"const host = pm.environment.get('host');\r",
+									"const port = pm.environment.get('port');\r",
+									"\r",
+									"const postRequest = {\r",
+									"    url: `${protocol}://${host}:${port}/users/register`,\r",
+									"    method: 'POST',\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"    },\r",
+									"    body: {\r",
+									"        mode: 'raw',\r",
+									"        raw: JSON.stringify({\r",
+									"            age: parseInt(pm.environment.get('newAge')),\r",
+									"            username: pm.environment.get('newUsername'),\r",
+									"            password: pm.environment.get('newPassword'),\r",
+									"            email: pm.environment.get('newEmail')\r",
+									"        }),\r",
+									"    },\r",
+									"};\r",
+									"\r",
+									"pm.sendRequest(postRequest, (error, response) => {\r",
+									"    console.log(error ? error : response.json());\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('response status code should have 401 value', () => {\r",
+									"   pm.response.to.have.status(401);\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should have correct property and value', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    \r",
+									"    pm.expect(responseJson.status).to.equals('unauthenticated');\r",
+									"    pm.expect(responseJson.message).to.be.a('string');\r",
+									"    pm.expect(responseJson.message).to.not.equals('');\r",
+									"    pm.expect(responseJson.message).to.not.equals(null);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"newjohndoe@example.com\",\r\n    \"username\": \"newjohndoe\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/users",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User with Authentication User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('it should response 200 status code', () => {\r",
+									"    pm.expect(pm.response).to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test('response Content-Type header should have application/json value', () => {\r",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.includes('application/json');\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should an object', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"});\r",
+									"\r",
+									"pm.test('response body should have correct property and value', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(responseJson.status).to.be.a('string');\r",
+									"    pm.expect(responseJson.message).to.be.a('string');\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const protocol = pm.environment.get('protocol');\r",
+									"const host = pm.environment.get('host');\r",
+									"const port = pm.environment.get('port');\r",
+									"\r",
+									"const loginUserRequest = {\r",
+									"    url: `${protocol}://${host}:${port}/users/login`,\r",
+									"    method: 'POST',\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"    },\r",
+									"    body: {\r",
+									"        mode: 'raw',\r",
+									"        raw: JSON.stringify({\r",
+									"            email: pm.environment.get('newEmail'),\r",
+									"            password: pm.environment.get('newPassword'),\r",
+									"        }),\r",
+									"    },\r",
+									"};\r",
+									"\r",
+									"pm.sendRequest(loginUserRequest, (error, response) => {\r",
+									"    console.log(error ? error : response.json());\r",
+									"\r",
+									"    responseJson = response.json();\r",
+									"\r",
+									"    pm.environment.set('token', responseJson.data.token);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/users",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User without Authentication User",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const protocol = pm.environment.get('protocol');\r",
+									"const host = pm.environment.get('host');\r",
+									"const port = pm.environment.get('port');\r",
+									"\r",
+									"const postRequest = {\r",
+									"    url: `${protocol}://${host}:${port}/users/register`,\r",
+									"    method: 'POST',\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"    },\r",
+									"    body: {\r",
+									"        mode: 'raw',\r",
+									"        raw: JSON.stringify({\r",
+									"            age: parseInt(pm.environment.get('newAge')),\r",
+									"            username: pm.environment.get('newUsername'),\r",
+									"            password: pm.environment.get('newPassword'),\r",
+									"            email: pm.environment.get('newEmail'),\r",
+									"        }),\r",
+									"    },\r",
+									"};\r",
+									"\r",
+									"pm.sendRequest(postRequest, (error, response) => {\r",
+									"    console.log(error ? error : response.json());\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('response status code should have 401 value', () => {\r",
+									"   pm.response.to.have.status(401);\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should have correct property and value', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.equals('unauthenticated');\r",
+									"    pm.expect(responseJson.message).to.be.a('string');\r",
+									"    pm.expect(responseJson.message).to.not.equals('');\r",
+									"    pm.expect(responseJson.message).to.not.equals(null);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/users",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Photos",
+			"item": [
+				{
+					"name": "Get All Photos with Authentication User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('it should response 200 status code', () => {\r",
+									"    pm.expect(pm.response).to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test('response Content-Type header should have application/json value', () => {\r",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.includes('application/json');\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should an object', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.be.a('string');\r",
+									"    pm.expect(responseJson.data).to.be.an('array');\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/photos",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"photos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Photos withour Authentication User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('should response 401 status code', () => {\r",
+									"    pm.response.to.have.status(401);\r",
+									"});\r",
+									"\r",
+									"pm.test('should respose with correct property and message', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.equals('unauthenticated');\r",
+									"    pm.expect(responseJson.message).to.be.an('string');\r",
+									"    pm.expect(responseJson.message).to.not.equals('');\r",
+									"    pm.expect(responseJson.message).to.not.equals(null);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/photos",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"photos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Photo with Authentication User and Valid Payload",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const protocol = pm.environment.get('protocol');\r",
+									"const host = pm.environment.get('host');\r",
+									"const port = pm.environment.get('port');\r",
+									"\r",
+									"const registerUserRequest = {\r",
+									"    url: `${protocol}://${host}:${port}/users/register`,\r",
+									"    method: 'POST',\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"    },\r",
+									"    body: {\r",
+									"        mode: 'raw',\r",
+									"        raw: JSON.stringify({\r",
+									"            age: parseInt(pm.environment.get('newAge')),\r",
+									"            username: pm.environment.get('newUsername'),\r",
+									"            password: pm.environment.get('newPassword'),\r",
+									"            email: pm.environment.get('newEmail')\r",
+									"        }),\r",
+									"    },\r",
+									"};\r",
+									"\r",
+									"pm.sendRequest(registerUserRequest, (error, response) => {\r",
+									"    console.log(error ? error : response.json());\r",
+									"\r",
+									"    const loginUserRequest = {\r",
+									"        url: `${protocol}://${host}:${port}/users/login`,\r",
+									"        method: 'POST',\r",
+									"        header: {\r",
+									"            'Content-Type': 'application/json',\r",
+									"        },\r",
+									"        body: {\r",
+									"            mode: 'raw',\r",
+									"            raw: JSON.stringify({\r",
+									"                email: pm.environment.get('newEmail'),\r",
+									"                password: pm.environment.get('newPassword')\r",
+									"            }),\r",
+									"        },\r",
+									"    };\r",
+									"\r",
+									"    pm.sendRequest(loginUserRequest, (error, response) => {\r",
+									"        console.log(error ? error : response.json());\r",
+									"\r",
+									"        responseJson = response.json();\r",
+									"\r",
+									"        pm.environment.set('token', responseJson.data.token);\r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('should response 201 status code', () => {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"pm.test('should response with correct property and message', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.be.an('string');\r",
+									"    pm.expect(responseJson.data).to.be.an('object');\r",
+									"    pm.expect(responseJson.data.id).to.be.an('string');\r",
+									"    pm.expect(responseJson.data.title).to.be.a('string');\r",
+									"    pm.expect(responseJson.data.caption).to.be.a('string');\r",
+									"    pm.expect(responseJson.data.photo_url).to.be.a('string');\r",
+									"    pm.expect(responseJson.data.user_id).to.be.a('string');\r",
+									"    pm.expect(responseJson.data.created_at).to.be.a('string');\r",
+									"\r",
+									"    pm.environment.set('addedPhoto', responseJson.data.id);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"{{newTitle}}\",\r\n    \"caption\": \"{{newCaption}}\",\r\n    \"photo_url\": \"{{newPhotoUrl}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/photos",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"photos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Photo with Authentication User and Bad Payload",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"let badPhotoPayloads = pm.environment.get('badPhotoPayloads');\r",
+									"\r",
+									"if (!badPhotoPayloads || badPhotoPayloads.length === 0) {\r",
+									"    badPhotoPayloads = [\r",
+									"        {},\r",
+									"        { caption: 'A caption' },\r",
+									"        { caption: 'A caption', photoUrl:\"https://www.example.com/image.jpg\" },\r",
+									"        { title: \"A title\", caption: 'A caption', photoUrl: true }\r",
+									"    ];\r",
+									"}\r",
+									"\r",
+									"const currentBadPhotoPayload = badPhotoPayloads.shift();\r",
+									"\r",
+									"pm.environment.set('currentBadPhotoPayload', JSON.stringify(currentBadPhotoPayload));\r",
+									"pm.environment.set('badPhotoPayloads', badPhotoPayloads);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('response status code should have 400 value', () => {\r",
+									"   pm.response.to.have.status(400);\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should have correct property and value', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.equals('fail');\r",
+									"    pm.expect(responseJson.message).to.be.a('string');\r",
+									"    pm.expect(responseJson.message).to.not.equals('');\r",
+									"    pm.expect(responseJson.message).to.not.equals(null);\r",
+									"});\r",
+									"\r",
+									"const repeatRequestUntilDatasetEmpty = () => {\r",
+									"    const badPhotoPayloads = pm.environment.get('badPhotoPayloads');\r",
+									" \r",
+									"    if(badPhotoPayloads && badPhotoPayloads.length > 0) {\r",
+									"        postman.setNextRequest('Add Photo with Authentication User and Bad Payload');\r",
+									"    }\r",
+									"}\r",
+									" \r",
+									"repeatRequestUntilDatasetEmpty();"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{currentBadPhotoPayload}}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/photos",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"photos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Photo without Authentication User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('response status code should have 401 value', () => {\r",
+									"   pm.response.to.have.status(401);\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should have correct property and value', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.equals('unauthenticated');\r",
+									"    pm.expect(responseJson.message).to.be.a('string');\r",
+									"    pm.expect(responseJson.message).to.not.equals('');\r",
+									"    pm.expect(responseJson.message).to.not.equals(null);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"{{newTitle}}\",\r\n    \"caption\": \"{{newUsername}}\",\r\n    \"photo_url\": \"{{newPhotoUrl}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/photos",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"photos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Photo with Authentication User and Valid Payload",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('it should response 200 status code', () => {\r",
+									"    pm.expect(pm.response).to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test('response Content-Type header should have application/json value', () => {\r",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.includes('application/json');\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should an object', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"});\r",
+									"\r",
+									"pm.test('response body should have correct property and value', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.be.an('string');\r",
+									"    pm.expect(responseJson.data).to.be.an('object');\r",
+									"    pm.expect(responseJson.data.id).to.be.an('string');\r",
+									"    pm.expect(responseJson.data.title).to.be.a('string');\r",
+									"    pm.expect(responseJson.data.caption).to.be.a('string');\r",
+									"    pm.expect(responseJson.data.photo_url).to.be.a('string');\r",
+									"    pm.expect(responseJson.data.user_id).to.be.a('string');\r",
+									"    pm.expect(responseJson.data.updated_at).to.be.a('string');\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"New a title\",\r\n    \"caption\": \"New a caption\",\r\n    \"photo_url\": \"https://www.example.com/new-image.jpg\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/photos/{{addedPhoto}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"photos",
+								"{{addedPhoto}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Photo with Authentication and Unavailable Photo",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('response status code should have 404 value', () => {\r",
+									"   pm.response.to.have.status(404);\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should have correct property and value', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.equals('fail');\r",
+									"    pm.expect(responseJson.message).to.be.a('string');\r",
+									"    pm.expect(responseJson.message).to.not.equals('');\r",
+									"    pm.expect(responseJson.message).to.not.equals(null);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"New a title\",\r\n    \"caption\": \"New a caption\",\r\n    \"photoUrl\": \"https://www.example.com/new-image.jpg\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/photos/{{dummyPhotoId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"photos",
+								"{{dummyPhotoId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Photo with Authentication User and Bad Payload",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"let badUpdatePhotoPayloads = pm.environment.get('badUpdatePhotoPayloads');\r",
+									"\r",
+									"if (!badUpdatePhotoPayloads || badUpdatePhotoPayloads.length === 0) {\r",
+									"    badUpdatePhotoPayloads = [\r",
+									"        { title: true, caption: \"New a caption\", photoUrl: \"https://www.example.com/new-image.jpg\" },\r",
+									"        { title: \"New a title\", caption: \"New a caption\", photo_url: 123 }\r",
+									"    ];\r",
+									"}\r",
+									"\r",
+									"const currentBadUpdatePhotoPayload = badUpdatePhotoPayloads.shift();\r",
+									"\r",
+									"pm.environment.set('currentBadUpdatePhotoPayload', JSON.stringify(currentBadUpdatePhotoPayload));\r",
+									"pm.environment.set('badUpdatePhotoPayloads', badUpdatePhotoPayloads);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('response status code should have 400 value', () => {\r",
+									"   pm.response.to.have.status(400);\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should have correct property and value', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.equals('fail');\r",
+									"    pm.expect(responseJson.message).to.be.a('string');\r",
+									"    pm.expect(responseJson.message).to.not.equals('');\r",
+									"    pm.expect(responseJson.message).to.not.equals(null);\r",
+									"});\r",
+									"\r",
+									"const repeatRequestUntilDatasetEmpty = () => {\r",
+									"    const badUpdatePhotoPayloads = pm.environment.get('badUpdatePhotoPayloads');\r",
+									" \r",
+									"    if(badUpdatePhotoPayloads && badUpdatePhotoPayloads.length > 0) {\r",
+									"        postman.setNextRequest('Update Photo with Authentication User and Bad Payload');\r",
+									"    }\r",
+									"}\r",
+									" \r",
+									"repeatRequestUntilDatasetEmpty();"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{currentBadUpdatePhotoPayload}}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/photos/{{addedPhoto}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"photos",
+								"{{addedPhoto}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Photo without Authentication User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('response status code should have 401 value', () => {\r",
+									"   pm.response.to.have.status(401);\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should have correct property and value', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.equals('unauthenticated');\r",
+									"    pm.expect(responseJson.message).to.be.a('string');\r",
+									"    pm.expect(responseJson.message).to.not.equals('');\r",
+									"    pm.expect(responseJson.message).to.not.equals(null);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"New a title\",\r\n    \"caption\": \"New a caption\",\r\n    \"photoUrl\": \"https://www.example.com/new-image.jpg\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/photos/{{addedPhoto}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"photos",
+								"{{addedPhoto}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Photo without Authorization",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('response status code should have 401 value', () => {\r",
+									"   pm.response.to.have.status(401);\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should have correct property and value', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.equals('unauthorized');\r",
+									"    pm.expect(responseJson.message).to.be.a('string');\r",
+									"    pm.expect(responseJson.message).to.not.equals('');\r",
+									"    pm.expect(responseJson.message).to.not.equals(null);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const protocol = pm.environment.get('protocol');\r",
+									"const host = pm.environment.get('host');\r",
+									"const port = pm.environment.get('port');\r",
+									"\r",
+									"const registerUserRequest = {\r",
+									"    url: `${protocol}://${host}:${port}/users/register`,\r",
+									"    method: 'POST',\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"    },\r",
+									"    body: {\r",
+									"        mode: 'raw',\r",
+									"        raw: JSON.stringify({\r",
+									"            age: parseInt(pm.environment.get('anotherNewAge')),\r",
+									"            username: pm.environment.get('anotherNewUsername'),\r",
+									"            password: pm.environment.get('anotherNewPassword'),\r",
+									"            email: pm.environment.get('anotherNewEmail')\r",
+									"        }),\r",
+									"    },\r",
+									"};\r",
+									"\r",
+									"pm.sendRequest(registerUserRequest, (error, response) => {\r",
+									"    console.log(error ? error : response.json());\r",
+									"\r",
+									"    const loginUserRequest = {\r",
+									"        url: `${protocol}://${host}:${port}/users/login`,\r",
+									"        method: 'POST',\r",
+									"        header: {\r",
+									"            'Content-Type': 'application/json',\r",
+									"        },\r",
+									"        body: {\r",
+									"            mode: 'raw',\r",
+									"            raw: JSON.stringify({\r",
+									"                email: pm.environment.get('anotherNewEmail'),\r",
+									"                password: pm.environment.get('anotherNewPassword')\r",
+									"            }),\r",
+									"        },\r",
+									"    };\r",
+									"\r",
+									"    pm.sendRequest(loginUserRequest, (error, response) => {\r",
+									"        console.log(error ? error : response.json());\r",
+									"\r",
+									"        responseJson = response.json();\r",
+									"\r",
+									"        pm.environment.set('token', responseJson.data.token);\r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"New a title\",\r\n    \"caption\": \"New a caption\",\r\n    \"photoUrl\": \"https://www.example.com/new-image.jpg\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/photos/{{addedPhoto}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"photos",
+								"{{addedPhoto}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Photo with Authentication User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('it should response 200 status code', () => {\r",
+									"    pm.expect(pm.response).to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test('response Content-Type header should have application/json value', () => {\r",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.includes('application/json');\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should an object', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"});\r",
+									"\r",
+									"pm.test('response body should have correct property and value', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(responseJson.message).to.be.a('string');\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const protocol = pm.environment.get('protocol');\r",
+									"const host = pm.environment.get('host');\r",
+									"const port = pm.environment.get('port');\r",
+									"\r",
+									"const loginUserRequest = {\r",
+									"    url: `${protocol}://${host}:${port}/users/login`,\r",
+									"    method: 'POST',\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"    },\r",
+									"    body: {\r",
+									"        mode: 'raw',\r",
+									"        raw: JSON.stringify({\r",
+									"            email: pm.environment.get('newEmail'),\r",
+									"            password: pm.environment.get('newPassword')\r",
+									"        }),\r",
+									"    },\r",
+									"};\r",
+									"\r",
+									"pm.sendRequest(loginUserRequest, (error, response) => {\r",
+									"    console.log(error ? error : response.json());\r",
+									"\r",
+									"    responseJson = response.json();\r",
+									"\r",
+									"    pm.environment.set('token', responseJson.data.token);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/photos/{{addedPhoto}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"photos",
+								"{{addedPhoto}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Photo with Authentication User and Not Found Photo",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('response status code should have 404 value', () => {\r",
+									"   pm.response.to.have.status(404);\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should have correct property and value', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.equals('fail');\r",
+									"    pm.expect(responseJson.message).to.be.a('string');\r",
+									"    pm.expect(responseJson.message).to.not.equals('');\r",
+									"    pm.expect(responseJson.message).to.not.equals(null);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/photos/{{dummyPhotoId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"photos",
+								"{{dummyPhotoId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Photo without Authentication User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('response status code should have 401 value', () => {\r",
+									"   pm.response.to.have.status(401);\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should have correct property and value', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.equals('unauthenticated');\r",
+									"    pm.expect(responseJson.message).to.be.a('string');\r",
+									"    pm.expect(responseJson.message).to.not.equals('');\r",
+									"    pm.expect(responseJson.message).to.not.equals(null);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/photos/{{addedPhoto}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"photos",
+								"{{addedPhoto}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Photo Without Authorization",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('response status code should have 401 value', () => {\r",
+									"   pm.response.to.have.status(401);\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should have correct property and value', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.equals('unauthorized');\r",
+									"    pm.expect(responseJson.message).to.be.a('string');\r",
+									"    pm.expect(responseJson.message).to.not.equals('');\r",
+									"    pm.expect(responseJson.message).to.not.equals(null);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const protocol = pm.environment.get('protocol');\r",
+									"const host = pm.environment.get('host');\r",
+									"const port = pm.environment.get('port');\r",
+									"\r",
+									"const loginUserRequest = {\r",
+									"    url: `${protocol}://${host}:${port}/users/login`,\r",
+									"    method: 'POST',\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"    },\r",
+									"    body: {\r",
+									"        mode: 'raw',\r",
+									"        raw: JSON.stringify({\r",
+									"            email: pm.environment.get('anotherNewEmail'),\r",
+									"            password: pm.environment.get('anotherNewPassword')\r",
+									"        }),\r",
+									"    },\r",
+									"};\r",
+									"\r",
+									"pm.sendRequest(loginUserRequest, (error, response) => {\r",
+									"    console.log(error ? error : response.json());\r",
+									"\r",
+									"    responseJson = response.json();\r",
+									"\r",
+									"    const addPhotoRequest = {\r",
+									"        url: `${protocol}://${host}:${port}/photos`,\r",
+									"        method: 'POST',\r",
+									"        header: {\r",
+									"            'Content-Type': 'application/json',\r",
+									"            'Authorization': `Bearer ${responseJson.data.token}`\r",
+									"        },\r",
+									"        body: {\r",
+									"            mode: 'raw',\r",
+									"            raw: JSON.stringify({\r",
+									"                title: pm.environment.get('newTitle'),\r",
+									"                caption: pm.environment.get('newCaption'),\r",
+									"                photo_url: pm.environment.get('newPhotoUrl')\r",
+									"            }),\r",
+									"        },\r",
+									"    };\r",
+									"\r",
+									"    pm.sendRequest(addPhotoRequest, (error, response) => {\r",
+									"        console.log(error ? error : response.json());\r",
+									"\r",
+									"        responseJson = response.json()\r",
+									"\r",
+									"        pm.environment.set('anotherAddedPhoto', responseJson.data.id);\r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/photos/{{anotherAddedPhoto}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"photos",
+								"{{anotherAddedPhoto}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Comments",
+			"item": [
+				{
+					"name": "Get All Comments with Authentication User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('it should response 200 status code', () => {\r",
+									"    pm.expect(pm.response).to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test('response Content-Type header should have application/json value', () => {\r",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.includes('application/json');\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should an object', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.be.a('string');\r",
+									"    pm.expect(responseJson.data).to.be.an('array');\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/comments",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"comments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Comments without Authentication User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('should response 401 status code', () => {\r",
+									"    pm.response.to.have.status(401);\r",
+									"});\r",
+									"\r",
+									"pm.test('should respose with correct property and message', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.equals('unauthenticated');\r",
+									"    pm.expect(responseJson.message).to.be.an('string');\r",
+									"    pm.expect(responseJson.message).to.not.equals('');\r",
+									"    pm.expect(responseJson.message).to.not.equals(null);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/comments",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"comments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Comment with Authentication User and Valid Payload",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('should response 201 status code', () => {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"pm.test('should response with correct property and message', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.be.a('string');\r",
+									"    pm.expect(responseJson.data).to.be.an('object');\r",
+									"    pm.expect(responseJson.data.id).to.be.a('string');\r",
+									"    pm.expect(responseJson.data.user_id).to.be.a('string');\r",
+									"    pm.expect(responseJson.data.photo_id).to.be.a('string');\r",
+									"    pm.expect(responseJson.data.message).to.be.a('string');\r",
+									"    pm.expect(responseJson.data.created_at).to.be.a('string');\r",
+									"\r",
+									"    pm.environment.set('addedComment', responseJson.data.id);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const protocol = pm.environment.get('protocol');\r",
+									"const host = pm.environment.get('host');\r",
+									"const port = pm.environment.get('port');\r",
+									"\r",
+									"const registerUserRequest = {\r",
+									"    url: `${protocol}://${host}:${port}/users/register`,\r",
+									"    method: 'POST',\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"    },\r",
+									"    body: {\r",
+									"        mode: 'raw',\r",
+									"        raw: JSON.stringify({\r",
+									"            age: parseInt(pm.environment.get('newAge')),\r",
+									"            username: pm.environment.get('newUsername'),\r",
+									"            password: pm.environment.get('newPassword'),\r",
+									"            email: pm.environment.get('newEmail')\r",
+									"        }),\r",
+									"    },\r",
+									"};\r",
+									"\r",
+									"pm.sendRequest(registerUserRequest, (error, response) => {\r",
+									"    console.log(error ? error : response.json());\r",
+									"\r",
+									"    const loginUserRequest = {\r",
+									"        url: `${protocol}://${host}:${port}/users/login`,\r",
+									"        method: 'POST',\r",
+									"        header: {\r",
+									"            'Content-Type': 'application/json',\r",
+									"        },\r",
+									"        body: {\r",
+									"            mode: 'raw',\r",
+									"            raw: JSON.stringify({\r",
+									"                email: pm.environment.get('newEmail'),\r",
+									"                password: pm.environment.get('newPassword')\r",
+									"            }),\r",
+									"        },\r",
+									"    };\r",
+									"\r",
+									"    pm.sendRequest(loginUserRequest, (error, response) => {\r",
+									"        console.log(error ? error : response.json());\r",
+									"\r",
+									"        responseJson = response.json();\r",
+									"\r",
+									"        pm.environment.set('token', responseJson.data.token);\r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"message\": \"{{newComment}}\",\r\n    \"photo_id\": \"{{anotherAddedPhoto}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/comments",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"comments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Comment with Authentication User and Not Found Photo",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('should response 404 status code', () => {\r",
+									"    pm.response.to.have.status(404);\r",
+									"});\r",
+									"\r",
+									"pm.test('should respose with correct property and message', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.equals('fail');\r",
+									"    pm.expect(responseJson.message).to.be.an('string');\r",
+									"    pm.expect(responseJson.message).to.not.equals('');\r",
+									"    pm.expect(responseJson.message).to.not.equals(null);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"message\": \"{{newComment}}\",\r\n    \"photoId\": \"{{dummyPhotoId}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/comments",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"comments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Comment with Authentication User and Bad Payload",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"let badCommentPayloads = pm.environment.get('badCommentPayloads');\r",
+									"let anotherAddedPhoto = pm.environment.get('anotherAddedPhoto');\r",
+									"\r",
+									"if (!badCommentPayloads || badCommentPayloads.length === 0) {\r",
+									"    badCommentPayloads = [\r",
+									"        { message: 8, photoId: anotherAddedPhoto }\r",
+									"    ];\r",
+									"}\r",
+									"\r",
+									"const currentBadCommentPayload = badCommentPayloads.shift();\r",
+									"\r",
+									"pm.environment.set('currentBadCommentPayload', JSON.stringify(currentBadCommentPayload));\r",
+									"pm.environment.set('badCommentPayloads', badCommentPayloads);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('response status code should have 400 value', () => {\r",
+									"   pm.response.to.have.status(400);\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should have correct property and value', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.equals('fail');\r",
+									"    pm.expect(responseJson.message).to.be.a('string');\r",
+									"    pm.expect(responseJson.message).to.not.equals('');\r",
+									"    pm.expect(responseJson.message).to.not.equals(null);\r",
+									"});\r",
+									"\r",
+									"const repeatRequestUntilDatasetEmpty = () => {\r",
+									"    const badCommentPayloads = pm.environment.get('badCommentPayloads');\r",
+									" \r",
+									"    if(badCommentPayloads && badCommentPayloads.length > 0) {\r",
+									"        postman.setNextRequest('Add Comment with Authentication User and Bad Payload');\r",
+									"    }\r",
+									"}\r",
+									" \r",
+									"repeatRequestUntilDatasetEmpty();"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{currentBadCommentPayload}}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/comments",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"comments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Comment without Authentication User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('response status code should have 401 value', () => {\r",
+									"   pm.response.to.have.status(401);\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should have correct property and value', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.equals('unauthenticated');\r",
+									"    pm.expect(responseJson.message).to.be.a('string');\r",
+									"    pm.expect(responseJson.message).to.not.equals('');\r",
+									"    pm.expect(responseJson.message).to.not.equals(null);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"message\": \"{{newComment}}\",\r\n    \"photoId\": \"{{addedPhoto}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/comments",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"comments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Comment with Authentication User and Valid Payload",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('it should response 200 status code', () => {\r",
+									"    pm.expect(pm.response).to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test('response Content-Type header should have application/json value', () => {\r",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.includes('application/json');\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should an object', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"});\r",
+									"\r",
+									"pm.test('response body should have correct property and value', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.be.a('string');\r",
+									"    pm.expect(responseJson.data).to.be.an('object');\r",
+									"    pm.expect(responseJson.data.id).to.be.a('string');\r",
+									"    pm.expect(responseJson.data.title).to.be.a('string');\r",
+									"    pm.expect(responseJson.data.caption).to.be.a('string');\r",
+									"    pm.expect(responseJson.data.photo_url).to.be.a('string');\r",
+									"    pm.expect(responseJson.data.user_id).to.be.a('string');\r",
+									"    pm.expect(responseJson.data.updated_at).to.be.a('string');\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"message\": \"A new comment\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/comments/{{addedComment}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"comments",
+								"{{addedComment}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Comment with Authentication User and Not Found Comment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('should response 404 status code', () => {\r",
+									"    pm.response.to.have.status(404);\r",
+									"});\r",
+									"\r",
+									"pm.test('should respose with correct property and message', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.equals('fail');\r",
+									"    pm.expect(responseJson.message).to.be.an('string');\r",
+									"    pm.expect(responseJson.message).to.not.equals('');\r",
+									"    pm.expect(responseJson.message).to.not.equals(null);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"message\": \"A new comment\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/comments/{{dummyCommentId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"comments",
+								"{{dummyCommentId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Comment with Authentication User and Bad Payload",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"let badUpdateCommentPayloads = pm.environment.get('badUpdateCommentPayloads');\r",
+									"\r",
+									"if (!badUpdateCommentPayloads || badUpdateCommentPayloads.length === 0) {\r",
+									"    badUpdateCommentPayloads = [\r",
+									"        { message: true }\r",
+									"    ];\r",
+									"}\r",
+									"\r",
+									"const currentBadUpdateCommentPayload = badUpdateCommentPayloads.shift();\r",
+									"\r",
+									"pm.environment.set('currentBadUpdateCommentPayload', JSON.stringify(currentBadUpdateCommentPayload));\r",
+									"pm.environment.set('badUpdateCommentPayloads', badUpdateCommentPayloads);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('response status code should have 400 value', () => {\r",
+									"   pm.response.to.have.status(400);\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should have correct property and value', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.equals('fail');\r",
+									"    pm.expect(responseJson.message).to.be.a('string');\r",
+									"    pm.expect(responseJson.message).to.not.equals('');\r",
+									"    pm.expect(responseJson.message).to.not.equals(null);\r",
+									"});\r",
+									"\r",
+									"const repeatRequestUntilDatasetEmpty = () => {\r",
+									"    const badUpdateCommentPayloads = pm.environment.get('badUpdateCommentPayloads');\r",
+									" \r",
+									"    if(badUpdateCommentPayloads && badUpdateCommentPayloads.length > 0) {\r",
+									"        postman.setNextRequest('Update Comment with Authentication User and Bad Payload');\r",
+									"    }\r",
+									"}\r",
+									" \r",
+									"repeatRequestUntilDatasetEmpty();"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{currentBadUpdateCommentPayload}}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/comments/{{addedComment}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"comments",
+								"{{addedComment}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Comment without Authentication User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('response status code should have 401 value', () => {\r",
+									"   pm.response.to.have.status(401);\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should have correct property and value', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.equals('unauthenticated');\r",
+									"    pm.expect(responseJson.message).to.be.a('string');\r",
+									"    pm.expect(responseJson.message).to.not.equals('');\r",
+									"    pm.expect(responseJson.message).to.not.equals(null);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"message\": \"A new comment\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/comments/{{addedComment}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"comments",
+								"{{addedComment}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Comment without Authorization",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('response status code should have 401 value', () => {\r",
+									"   pm.response.to.have.status(401);\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should have correct property and value', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.equals('unauthorized');\r",
+									"    pm.expect(responseJson.message).to.be.a('string');\r",
+									"    pm.expect(responseJson.message).to.not.equals('');\r",
+									"    pm.expect(responseJson.message).to.not.equals(null);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const protocol = pm.environment.get('protocol');\r",
+									"const host = pm.environment.get('host');\r",
+									"const port = pm.environment.get('port');\r",
+									"\r",
+									"const loginUserRequest = {\r",
+									"    url: `${protocol}://${host}:${port}/users/login`,\r",
+									"    method: 'POST',\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"    },\r",
+									"    body: {\r",
+									"        mode: 'raw',\r",
+									"        raw: JSON.stringify({\r",
+									"            email: pm.environment.get('anotherNewEmail'),\r",
+									"            password: pm.environment.get('anotherNewPassword')\r",
+									"        }),\r",
+									"    },\r",
+									"};\r",
+									"\r",
+									"pm.sendRequest(loginUserRequest, (error, response) => {\r",
+									"    console.log(error ? error : response.json());\r",
+									"\r",
+									"    responseJson = response.json();\r",
+									"\r",
+									"    pm.environment.set('token', responseJson.data.token);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"message\": \"A new comment\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/comments/{{addedComment}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"comments",
+								"{{addedComment}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Comment with Authentication User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('it should response 200 status code', () => {\r",
+									"    pm.expect(pm.response).to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test('response Content-Type header should have application/json value', () => {\r",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.includes('application/json');\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should an object', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"});\r",
+									"\r",
+									"pm.test('response body should have correct property and value', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(responseJson.message).to.be.a('string');\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const protocol = pm.environment.get('protocol');\r",
+									"const host = pm.environment.get('host');\r",
+									"const port = pm.environment.get('port');\r",
+									"\r",
+									"const loginUserRequest = {\r",
+									"        url: `${protocol}://${host}:${port}/users/login`,\r",
+									"        method: 'POST',\r",
+									"        header: {\r",
+									"            'Content-Type': 'application/json',\r",
+									"        },\r",
+									"        body: {\r",
+									"            mode: 'raw',\r",
+									"            raw: JSON.stringify({\r",
+									"                email: pm.environment.get('newEmail'),\r",
+									"                password: pm.environment.get('newPassword')\r",
+									"            }),\r",
+									"        },\r",
+									"    };\r",
+									"\r",
+									"    pm.sendRequest(loginUserRequest, (error, response) => {\r",
+									"        console.log(error ? error : response.json());\r",
+									"\r",
+									"        responseJson = response.json();\r",
+									"\r",
+									"        pm.environment.set('token', responseJson.data.token);\r",
+									"    });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/comments/{{addedComment}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"comments",
+								"{{addedComment}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Comment with Authentication User and Not Found Comment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('response status code should have 404 value', () => {\r",
+									"   pm.response.to.have.status(404);\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should have correct property and value', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.equals('fail');\r",
+									"    pm.expect(responseJson.message).to.be.a('string');\r",
+									"    pm.expect(responseJson.message).to.not.equals('');\r",
+									"    pm.expect(responseJson.message).to.not.equals(null);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/comments/{{dummyCommentId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"comments",
+								"{{dummyCommentId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Comment without Authentication User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('response status code should have 401 value', () => {\r",
+									"   pm.response.to.have.status(401);\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should have correct property and value', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.equals('unauthenticated');\r",
+									"    pm.expect(responseJson.message).to.be.a('string');\r",
+									"    pm.expect(responseJson.message).to.not.equals('');\r",
+									"    pm.expect(responseJson.message).to.not.equals(null);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/comments/{{addedComment}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"comments",
+								"{{addedComment}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Comment without Authorization",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('response status code should have 401 value', () => {\r",
+									"   pm.response.to.have.status(401);\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should have correct property and value', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.equals('unauthorized');\r",
+									"    pm.expect(responseJson.message).to.be.a('string');\r",
+									"    pm.expect(responseJson.message).to.not.equals('');\r",
+									"    pm.expect(responseJson.message).to.not.equals(null);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const protocol = pm.environment.get('protocol');\r",
+									"const host = pm.environment.get('host');\r",
+									"const port = pm.environment.get('port');\r",
+									"\r",
+									"const loginUserRequest = {\r",
+									"    url: `${protocol}://${host}:${port}/users/login`,\r",
+									"    method: 'POST',\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"    },\r",
+									"    body: {\r",
+									"        mode: 'raw',\r",
+									"        raw: JSON.stringify({\r",
+									"            email: pm.environment.get('anotherNewEmail'),\r",
+									"            password: pm.environment.get('anotherNewPassword')\r",
+									"        }),\r",
+									"    },\r",
+									"};\r",
+									"\r",
+									"pm.sendRequest(loginUserRequest, (error, response) => {\r",
+									"    console.log(error ? error : response.json());\r",
+									"\r",
+									"    responseJson = response.json();\r",
+									"\r",
+									"    const addCommentRequest = {\r",
+									"        url: `${protocol}://${host}:${port}/comments`,\r",
+									"        method: 'POST',\r",
+									"        header: {\r",
+									"            'Content-Type': 'application/json',\r",
+									"            'Authorization': `Bearer ${responseJson.data.token}`\r",
+									"        },\r",
+									"        body: {\r",
+									"            mode: 'raw',\r",
+									"            raw: JSON.stringify({\r",
+									"                message: pm.environment.get('anotherNewComment'),\r",
+									"                photo_id: pm.environment.get('anotherAddedPhoto'),\r",
+									"            }),\r",
+									"        },\r",
+									"    };\r",
+									"\r",
+									"    pm.sendRequest(addCommentRequest, (error, response) => {\r",
+									"        console.log(error ? error : response.json());\r",
+									"\r",
+									"        responseJson = response.json();\r",
+									"\r",
+									"        pm.environment.set('anotherAddedComment', responseJson.data.id);\r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/comments/{{anotherAddedComment}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"comments",
+								"{{anotherAddedComment}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Social Medias",
+			"item": [
+				{
+					"name": "Get All Social Medias with Authentication User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('it should response 200 status code', () => {\r",
+									"    pm.expect(pm.response).to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test('response Content-Type header should have application/json value', () => {\r",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.includes('application/json');\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should an object', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.be.a('string');\r",
+									"    pm.expect(responseJson.data).to.be.an('object');\r",
+									"    pm.expect(responseJson.data.social_medias).to.be.an('array');\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/socialmedias",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"socialmedias"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Social Medias without Authentication User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('should response 401 status code', () => {\r",
+									"    pm.response.to.have.status(401);\r",
+									"});\r",
+									"\r",
+									"pm.test('should respose with correct property and message', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.equals('unauthenticated');\r",
+									"    pm.expect(responseJson.message).to.be.an('string');\r",
+									"    pm.expect(responseJson.message).to.not.equals('');\r",
+									"    pm.expect(responseJson.message).to.not.equals(null);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/socialmedias",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"socialmedias"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Social Media with Authentication and Valid Payload",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('should response 201 status code', () => {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"pm.test('should response with correct property and message', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.be.a('string');\r",
+									"    pm.expect(responseJson.data).to.be.a('object');\r",
+									"    pm.expect(responseJson.data.id).to.be.a('string');\r",
+									"    pm.expect(responseJson.data.name).to.be.a('string');\r",
+									"    pm.expect(responseJson.data.social_media_url).to.be.a('string');\r",
+									"    pm.expect(responseJson.data.user_id).to.be.a('string');\r",
+									"    pm.expect(responseJson.data.created_at).to.be.a('string');\r",
+									"\r",
+									"    pm.environment.set('addedSocialMedia', responseJson.data.id);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{newSocialMedia}}\",\r\n    \"social_media_url\": \"{{newSocialMediaUrl}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/socialmedias",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"socialmedias"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Social Media with Authentication and Bad Payload",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"let badSocialMediaPayloads = pm.environment.get('badSocialMediaPayloads');\r",
+									"\r",
+									"if (!badSocialMediaPayloads || badSocialMediaPayloads.length === 0) {\r",
+									"    badSocialMediaPayloads = [\r",
+									"        {},\r",
+									"        { socialMediaUrl: 'https://www.example.com/johndoe' },\r",
+									"        { name: 8, socialMediaUrl: 'https://www.example.com/johndoe' },\r",
+									"    ];\r",
+									"}\r",
+									"\r",
+									"const currentBadSocialMediaPayload = badSocialMediaPayloads.shift();\r",
+									"\r",
+									"pm.environment.set('currentBadSocialMediaPayload', JSON.stringify(currentBadSocialMediaPayload));\r",
+									"pm.environment.set('badSocialMediaPayloads', badSocialMediaPayloads);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('response status code should have 400 value', () => {\r",
+									"   pm.response.to.have.status(400);\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should have correct property and value', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.equals('fail');\r",
+									"    pm.expect(responseJson.message).to.be.a('string');\r",
+									"    pm.expect(responseJson.message).to.not.equals('');\r",
+									"    pm.expect(responseJson.message).to.not.equals(null);\r",
+									"});\r",
+									"\r",
+									"const repeatRequestUntilDatasetEmpty = () => {\r",
+									"    const badCommentPayloads = pm.environment.get('badCommentPayloads');\r",
+									" \r",
+									"    if(badCommentPayloads && badCommentPayloads.length > 0) {\r",
+									"        postman.setNextRequest('Add Comment with Authentication User and Bad Payload');\r",
+									"    }\r",
+									"}\r",
+									" \r",
+									"repeatRequestUntilDatasetEmpty();"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{currentBadSocialMediaPayload}}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/socialmedias",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"socialmedias"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Social Media without Authentication User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('response status code should have 401 value', () => {\r",
+									"   pm.response.to.have.status(401);\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should have correct property and value', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.equals('unauthenticated');\r",
+									"    pm.expect(responseJson.message).to.be.a('string');\r",
+									"    pm.expect(responseJson.message).to.not.equals('');\r",
+									"    pm.expect(responseJson.message).to.not.equals(null);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{newSocialMedia}}\",\r\n    \"socialMediaUrl\": \"{{newSocialMediaUrl}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/socialmedias",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"socialmedias"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Social Media with Authentication User",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const protocol = pm.environment.get('protocol');\r",
+									"const host = pm.environment.get('host');\r",
+									"const port = pm.environment.get('port');\r",
+									"\r",
+									"const postRequest = {\r",
+									"    url: `${protocol}://${host}:${port}/socialmedias`,\r",
+									"    method: 'POST',\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"    },\r",
+									"    body: {\r",
+									"        mode: 'raw',\r",
+									"        raw: JSON.stringify({\r",
+									"            name: pm.environment.get('newSocialMedia'),\r",
+									"            socialMediaUrl: pm.environment.get('newSocialMediaUrl')\r",
+									"        }),\r",
+									"    },\r",
+									"};\r",
+									"\r",
+									"pm.sendRequest(postRequest, (error, response) => {\r",
+									"    console.log(error ? error : response.json());\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('it should response 200 status code', () => {\r",
+									"    pm.expect(pm.response).to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test('response Content-Type header should have application/json value', () => {\r",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.includes('application/json');\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should an object', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"});\r",
+									"\r",
+									"pm.test('response body should have correct property and value', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.id).to.be.an('string');\r",
+									"    pm.expect(responseJson.name).to.be.a('string');\r",
+									"    pm.expect(responseJson.social_media_url).to.be.a('string');\r",
+									"    pm.expect(responseJson.user_id).to.be.a('string');\r",
+									"    pm.expect(responseJson.updated_at).to.be.a('string');\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"newjohndoe\",\r\n    \"social_media_url\": \"https://www.example.com/newjohndoe\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/socialmedias/{{addedSocialMedia}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"socialmedias",
+								"{{addedSocialMedia}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Social Media with Authentication User and Not Found Social Media",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('should response 404 status code', () => {\r",
+									"    pm.response.to.have.status(404);\r",
+									"});\r",
+									"\r",
+									"pm.test('should respose with correct property and message', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.equals('fail');\r",
+									"    pm.expect(responseJson.message).to.be.an('string');\r",
+									"    pm.expect(responseJson.message).to.not.equals('');\r",
+									"    pm.expect(responseJson.message).to.not.equals(null);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/socialmedias/{{dummySocialMediaId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"socialmedias",
+								"{{dummySocialMediaId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Social Media without Authentication User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('response status code should have 401 value', () => {\r",
+									"   pm.response.to.have.status(401);\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should have correct property and value', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.equals('unauthenticated');\r",
+									"    pm.expect(responseJson.message).to.be.a('string');\r",
+									"    pm.expect(responseJson.message).to.not.equals('');\r",
+									"    pm.expect(responseJson.message).to.not.equals(null);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"newjohndoe\",\r\n    \"socialMediaUrl\": \"https://www.example.com/newjohndoe\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/socialmedias/{{addedSocialMedia}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"socialmedias",
+								"{{addedSocialMedia}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Social Media without Authorization",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('response status code should have 401 value', () => {\r",
+									"   pm.response.to.have.status(401);\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should have correct property and value', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.equals('unauthorized');\r",
+									"    pm.expect(responseJson.message).to.be.a('string');\r",
+									"    pm.expect(responseJson.message).to.not.equals('');\r",
+									"    pm.expect(responseJson.message).to.not.equals(null);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const protocol = pm.environment.get('protocol');\r",
+									"const host = pm.environment.get('host');\r",
+									"const port = pm.environment.get('port');\r",
+									"\r",
+									"const loginUserRequest = {\r",
+									"    url: `${protocol}://${host}:${port}/users/login`,\r",
+									"    method: 'POST',\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"    },\r",
+									"    body: {\r",
+									"        mode: 'raw',\r",
+									"        raw: JSON.stringify({\r",
+									"            email: pm.environment.get('anotherNewEmail'),\r",
+									"            password: pm.environment.get('anotherNewPassword')\r",
+									"        }),\r",
+									"    },\r",
+									"};\r",
+									"\r",
+									"pm.sendRequest(loginUserRequest, (error, response) => {\r",
+									"    console.log(error ? error : response.json());\r",
+									"\r",
+									"    responseJson = response.json();\r",
+									"\r",
+									"    pm.environment.set('token', responseJson.data.token);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"newjohndoe\",\r\n    \"social_media_url\": \"https://www.example.com/newjohndoe\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/socialmedias/{{addedSocialMedia}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"socialmedias",
+								"{{addedSocialMedia}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Social Media with Authentication User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('it should response 200 status code', () => {\r",
+									"    pm.expect(pm.response).to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test('response Content-Type header should have application/json value', () => {\r",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.includes('application/json');\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should an object', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"});\r",
+									"\r",
+									"pm.test('response body should have correct property and value', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(responseJson.message).to.be.a('string');\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const protocol = pm.environment.get('protocol');\r",
+									"const host = pm.environment.get('host');\r",
+									"const port = pm.environment.get('port');\r",
+									"\r",
+									"const loginUserRequest = {\r",
+									"        url: `${protocol}://${host}:${port}/users/login`,\r",
+									"        method: 'POST',\r",
+									"        header: {\r",
+									"            'Content-Type': 'application/json',\r",
+									"        },\r",
+									"        body: {\r",
+									"            mode: 'raw',\r",
+									"            raw: JSON.stringify({\r",
+									"                email: pm.environment.get('newEmail'),\r",
+									"                password: pm.environment.get('newPassword')\r",
+									"            }),\r",
+									"        },\r",
+									"    };\r",
+									"\r",
+									"    pm.sendRequest(loginUserRequest, (error, response) => {\r",
+									"        console.log(error ? error : response.json());\r",
+									"\r",
+									"        responseJson = response.json();\r",
+									"\r",
+									"        pm.environment.set('token', responseJson.data.token);\r",
+									"    });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/socialmedias/{{addedSocialMedia}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"socialmedias",
+								"{{addedSocialMedia}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Social Media with Authentication User and Not Found Social Media",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('response status code should have 404 value', () => {\r",
+									"   pm.response.to.have.status(404);\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should have correct property and value', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.equals('fail');\r",
+									"    pm.expect(responseJson.message).to.be.a('string');\r",
+									"    pm.expect(responseJson.message).to.not.equals('');\r",
+									"    pm.expect(responseJson.message).to.not.equals(null);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/socialmedias/{{dummySocialMediaId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"socialmedias",
+								"{{dummySocialMediaId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Social Media without Authentication User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('response status code should have 401 value', () => {\r",
+									"   pm.response.to.have.status(401);\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should have correct property and value', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.equals('unauthenticated');\r",
+									"    pm.expect(responseJson.message).to.be.a('string');\r",
+									"    pm.expect(responseJson.message).to.not.equals('');\r",
+									"    pm.expect(responseJson.message).to.not.equals(null);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/socialmedias/{{addedSocialMedia}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"socialmedias",
+								"{{addedSocialMedia}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Social Media without Authorization",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('response status code should have 401 value', () => {\r",
+									"   pm.response.to.have.status(401);\r",
+									"}); \r",
+									"\r",
+									"pm.test('response body should have correct property and value', () => {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(responseJson).to.be.an('object');\r",
+									"    pm.expect(responseJson.status).to.equals('unauthorized');\r",
+									"    pm.expect(responseJson.message).to.be.a('string');\r",
+									"    pm.expect(responseJson.message).to.not.equals('');\r",
+									"    pm.expect(responseJson.message).to.not.equals(null);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const protocol = pm.environment.get('protocol');\r",
+									"const host = pm.environment.get('host');\r",
+									"const port = pm.environment.get('port');\r",
+									"\r",
+									"const loginUserRequest = {\r",
+									"    url: `${protocol}://${host}:${port}/users/login`,\r",
+									"    method: 'POST',\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"    },\r",
+									"    body: {\r",
+									"        mode: 'raw',\r",
+									"        raw: JSON.stringify({\r",
+									"            email: pm.environment.get('anotherNewEmail'),\r",
+									"            password: pm.environment.get('anotherNewPassword')\r",
+									"        }),\r",
+									"    },\r",
+									"};\r",
+									"\r",
+									"pm.sendRequest(loginUserRequest, (error, response) => {\r",
+									"    console.log(error ? error : response.json());\r",
+									"\r",
+									"    responseJson = response.json();\r",
+									"\r",
+									"    const addSocialMediaRequest = {\r",
+									"        url: `${protocol}://${host}:${port}/socialmedias`,\r",
+									"        method: 'POST',\r",
+									"        header: {\r",
+									"            'Content-Type': 'application/json',\r",
+									"            'Authorization': `Bearer ${responseJson.data.token}`\r",
+									"        },\r",
+									"        body: {\r",
+									"            mode: 'raw',\r",
+									"            raw: JSON.stringify({\r",
+									"                name: pm.environment.get('anotherNewSocialMedia'),\r",
+									"                social_media_url: pm.environment.get('anotherNewSocialMediaUrl'),\r",
+									"            }),\r",
+									"        },\r",
+									"    };\r",
+									"\r",
+									"    pm.sendRequest(addSocialMediaRequest, (error, response) => {\r",
+									"        console.log(error ? error : response.json());\r",
+									"\r",
+									"        responseJson = response.json();\r",
+									"\r",
+									"        pm.environment.set('anotherAddedSocialMedia', responseJson.data.id);\r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/socialmedias/{{anotherAddedSocialMedia}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"socialmedias",
+								"{{anotherAddedSocialMedia}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

@@ -1,0 +1,1032 @@
+basePath: /
+definitions:
+  mygram-api_comment_utils.ResponseMessage:
+    properties:
+      data:
+        example: the error explained here
+        type: string
+      status:
+        example: fail
+        type: string
+    type: object
+  mygram-api_photo_utils.ResponseMessage:
+    properties:
+      data:
+        example: the error explained here
+        type: string
+      status:
+        example: fail
+        type: string
+    type: object
+  mygram-api_socialmedia_utils.ResponseMessage:
+    properties:
+      data:
+        example: the error explained here
+        type: string
+      status:
+        example: fail
+        type: string
+    type: object
+  mygram-api_user_utils.ResponseMessage:
+    properties:
+      data:
+        example: the error explained here
+        type: string
+      status:
+        example: fail
+        type: string
+    type: object
+  utils.AddComment:
+    properties:
+      message:
+        example: A comment
+        type: string
+      photo_id:
+        example: photo-123
+        type: string
+    type: object
+  utils.AddPhoto:
+    properties:
+      caption:
+        example: A caption
+        type: string
+      photo_url:
+        example: https://www.example.com/image.jpg
+        type: string
+      title:
+        example: A Title
+        type: string
+    type: object
+  utils.AddSocialMedia:
+    properties:
+      name:
+        example: Example
+        type: string
+      social_media_url:
+        example: https://www.example.com/johndoe
+        type: string
+    type: object
+  utils.AddedComment:
+    properties:
+      created_at:
+        example: the created at generated here
+        type: string
+      id:
+        example: here is the generated comment id
+        type: string
+      message:
+        example: A comment
+        type: string
+      photo_id:
+        example: here is the generated photo id
+        type: string
+      user_id:
+        example: here is the generated user id
+        type: string
+    type: object
+  utils.AddedPhoto:
+    properties:
+      caption:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      photo_url:
+        type: string
+      title:
+        type: string
+      user_id:
+        type: string
+    type: object
+  utils.AddedSocialMedia:
+    properties:
+      created_at:
+        example: the created at generated here
+        type: string
+      id:
+        example: the social media id generated here
+        type: string
+      name:
+        example: Example
+        type: string
+      social_media_url:
+        example: https://www.example.com/johndoe
+        type: string
+      user_id:
+        example: here is the generated user id
+        type: string
+    type: object
+  utils.FetchedComment:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      message:
+        type: string
+      photo:
+        $ref: '#/definitions/utils.Photo'
+      photo_id:
+        type: string
+      updated_at:
+        type: string
+      user:
+        $ref: '#/definitions/utils.User'
+      user_id:
+        type: string
+    type: object
+  utils.FetchedPhoto:
+    properties:
+      caption:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      photo_url:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+      user:
+        $ref: '#/definitions/utils.User'
+      user_id:
+        type: string
+    type: object
+  utils.LoggedinUser:
+    properties:
+      token:
+        example: the token generated here
+        type: string
+    type: object
+  utils.LoginUser:
+    properties:
+      email:
+        example: johndoe@example.com
+        type: string
+      password:
+        example: secret
+        type: string
+    type: object
+  utils.Photo:
+    properties:
+      caption:
+        type: string
+      id:
+        type: string
+      photo_url:
+        type: string
+      title:
+        type: string
+      user_id:
+        type: string
+    type: object
+  utils.RegisterUser:
+    properties:
+      age:
+        example: 8
+        type: integer
+      email:
+        example: johndoe@example.com
+        type: string
+      password:
+        example: secret
+        type: string
+      username:
+        example: johndoe
+        type: string
+    type: object
+  utils.RegisteredUser:
+    properties:
+      age:
+        example: 8
+        type: integer
+      email:
+        example: johndoe@example.com
+        type: string
+      id:
+        example: the user id generated here
+        type: string
+      username:
+        example: johndoe
+        type: string
+    type: object
+  utils.ResponseDataAddedComment:
+    properties:
+      data:
+        $ref: '#/definitions/utils.AddedComment'
+      status:
+        example: success
+        type: string
+    type: object
+  utils.ResponseDataAddedPhoto:
+    properties:
+      data:
+        $ref: '#/definitions/utils.AddedPhoto'
+      status:
+        example: success
+        type: string
+    type: object
+  utils.ResponseDataAddedSocialMedia:
+    properties:
+      data:
+        $ref: '#/definitions/utils.AddedSocialMedia'
+      status:
+        example: success
+        type: string
+    type: object
+  utils.ResponseDataFetchedComment:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/utils.FetchedComment'
+        type: array
+      status:
+        example: success
+        type: string
+    type: object
+  utils.ResponseDataFetchedPhoto:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/utils.FetchedPhoto'
+        type: array
+      status:
+        example: success
+        type: string
+    type: object
+  utils.ResponseDataFetchedSocialMedia:
+    properties:
+      data:
+        $ref: '#/definitions/utils.SocialMedias'
+      status:
+        example: success
+        type: string
+    type: object
+  utils.ResponseDataLoggedinUser:
+    properties:
+      data:
+        $ref: '#/definitions/utils.LoggedinUser'
+      status:
+        example: success
+        type: string
+    type: object
+  utils.ResponseDataRegisteredUser:
+    properties:
+      data:
+        $ref: '#/definitions/utils.RegisteredUser'
+      status:
+        example: success
+        type: string
+    type: object
+  utils.ResponseDataUpdatedComment:
+    properties:
+      data:
+        $ref: '#/definitions/utils.UpdatedComment'
+      status:
+        example: success
+        type: string
+    type: object
+  utils.ResponseDataUpdatedPhoto:
+    properties:
+      data:
+        $ref: '#/definitions/utils.UpdatedPhoto'
+      status:
+        example: success
+        type: string
+    type: object
+  utils.ResponseDataUpdatedSocialMedia:
+    properties:
+      data:
+        $ref: '#/definitions/utils.UpdatedSocialMedia'
+      status:
+        example: success
+        type: string
+    type: object
+  utils.ResponseDataUpdatedUser:
+    properties:
+      data:
+        $ref: '#/definitions/utils.UpdatedUser'
+      status:
+        example: success
+        type: string
+    type: object
+  utils.ResponseMessageDeletedComment:
+    properties:
+      message:
+        example: your comment has been successfully deleted
+        type: string
+      status:
+        example: success
+        type: string
+    type: object
+  utils.ResponseMessageDeletedPhoto:
+    properties:
+      message:
+        example: your photo has been successfully deleted
+        type: string
+      status:
+        example: success
+        type: string
+    type: object
+  utils.ResponseMessageDeletedSocialMedia:
+    properties:
+      message:
+        example: your social media has been successfully deleted
+        type: string
+      status:
+        example: success
+        type: string
+    type: object
+  utils.ResponseMessageDeletedUser:
+    properties:
+      message:
+        example: your account has been successfully deleted
+        type: string
+      status:
+        example: success
+        type: string
+    type: object
+  utils.SocialMedia:
+    properties:
+      created_at:
+        example: here is the generated created at
+        type: string
+      id:
+        example: here is the generated social media id
+        type: string
+      name:
+        example: Example
+        type: string
+      social_media_url:
+        example: https://www.example.com/johndoe
+        type: string
+      updated_at:
+        example: here is the generated updated at
+        type: string
+      user:
+        $ref: '#/definitions/utils.User'
+      user_id:
+        example: here is the generated user id
+        type: string
+    type: object
+  utils.SocialMedias:
+    properties:
+      social_medias:
+        items:
+          $ref: '#/definitions/utils.SocialMedia'
+        type: array
+    type: object
+  utils.UpdateComment:
+    properties:
+      message:
+        example: A new comment
+        type: string
+    type: object
+  utils.UpdatePhoto:
+    properties:
+      caption:
+        example: A new caption
+        type: string
+      photo_url:
+        example: https://www.example.com/new-image.jpg
+        type: string
+      title:
+        example: A new title
+        type: string
+    type: object
+  utils.UpdateSocialMedia:
+    properties:
+      name:
+        example: New Example
+        type: string
+      social_media_url:
+        example: https://www.newexample.com/johndoe
+        type: string
+    type: object
+  utils.UpdateUser:
+    properties:
+      email:
+        example: newjohndoe@example.com
+        type: string
+      username:
+        example: newjohndoe
+        type: string
+    type: object
+  utils.UpdatedComment:
+    properties:
+      caption:
+        type: string
+      id:
+        type: string
+      photo_url:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  utils.UpdatedPhoto:
+    properties:
+      caption:
+        type: string
+      id:
+        type: string
+      photo_url:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  utils.UpdatedSocialMedia:
+    properties:
+      id:
+        example: here is the generated social media id
+        type: string
+      name:
+        example: New Example
+        type: string
+      social_media_url:
+        example: https://www.newexample.com/johndoe
+        type: string
+      updated_at:
+        example: the updated at generated here
+        type: string
+      user_id:
+        example: here is the generated user id
+        type: string
+    type: object
+  utils.UpdatedUser:
+    properties:
+      age:
+        example: 8
+        type: integer
+      email:
+        example: newjohndoe@example.com
+        type: string
+      id:
+        example: here is the generated user id
+        type: string
+      updated_at:
+        example: the updated at generated here
+        type: string
+      username:
+        example: newjohndoe
+        type: string
+    type: object
+  utils.User:
+    properties:
+      email:
+        example: johndoe@example.com
+        type: string
+      id:
+        example: here is the generated user id
+        type: string
+      username:
+        example: johndoe
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: musthafafaishal@gmail.com
+    name: musshal
+  description: MyGram is a free photo sharing app written in Go. People can share,
+    view, and comment photos by everyone. Anyone can create an account by registering
+    an email address and creating a username.
+  license:
+    name: MIT License
+    url: https://opensource.org/licenses/MIT
+  title: MyGram API
+  version: "1.0"
+paths:
+  /comments:
+    get:
+      consumes:
+      - application/json
+      description: Get all comments with authentication user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.ResponseDataFetchedComment'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/mygram-api_comment_utils.ResponseMessage'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/mygram-api_comment_utils.ResponseMessage'
+      security:
+      - Bearer: []
+      summary: Fetch all comments
+      tags:
+      - comments
+    post:
+      consumes:
+      - application/json
+      description: create and store a comment with authentication user
+      parameters:
+      - description: Add Comment
+        in: body
+        name: json
+        required: true
+        schema:
+          $ref: '#/definitions/utils.AddComment'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/utils.ResponseDataAddedComment'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/mygram-api_comment_utils.ResponseMessage'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/mygram-api_comment_utils.ResponseMessage'
+      security:
+      - Bearer: []
+      summary: Add a comment
+      tags:
+      - comments
+  /comments/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a comment by id with authentication user
+      parameters:
+      - description: Comment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.ResponseMessageDeletedComment'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/mygram-api_comment_utils.ResponseMessage'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/mygram-api_comment_utils.ResponseMessage'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/mygram-api_comment_utils.ResponseMessage'
+      security:
+      - Bearer: []
+      summary: Delete a comment
+      tags:
+      - comments
+    put:
+      consumes:
+      - application/json
+      description: Update a comment by id with authentication user
+      parameters:
+      - description: Comment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update Comment
+        in: body
+        name: json
+        required: true
+        schema:
+          $ref: '#/definitions/utils.UpdateComment'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.ResponseDataUpdatedComment'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/mygram-api_comment_utils.ResponseMessage'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/mygram-api_comment_utils.ResponseMessage'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/mygram-api_comment_utils.ResponseMessage'
+      security:
+      - Bearer: []
+      summary: Update a comment
+      tags:
+      - comments
+  /photos:
+    get:
+      consumes:
+      - application/json
+      description: Get all photos with authentication user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.ResponseDataFetchedPhoto'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/mygram-api_photo_utils.ResponseMessage'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/mygram-api_photo_utils.ResponseMessage'
+      security:
+      - Bearer: []
+      summary: Fetch all photos
+      tags:
+      - photos
+    post:
+      consumes:
+      - application/json
+      description: Create and store a photo with authentication user
+      parameters:
+      - description: Add Photo
+        in: body
+        name: json
+        required: true
+        schema:
+          $ref: '#/definitions/utils.AddPhoto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/utils.ResponseDataAddedPhoto'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/mygram-api_photo_utils.ResponseMessage'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/mygram-api_photo_utils.ResponseMessage'
+      security:
+      - Bearer: []
+      summary: Store a photo
+      tags:
+      - photos
+  /photos/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a photo by id with authentication user
+      parameters:
+      - description: Photo ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.ResponseMessageDeletedPhoto'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/mygram-api_photo_utils.ResponseMessage'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/mygram-api_photo_utils.ResponseMessage'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/mygram-api_photo_utils.ResponseMessage'
+      security:
+      - Bearer: []
+      summary: Delete a photo
+      tags:
+      - photos
+    put:
+      consumes:
+      - application/json
+      description: Update a photo by id with authentication user
+      parameters:
+      - description: Photo ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Photo
+        in: body
+        name: json
+        required: true
+        schema:
+          $ref: '#/definitions/utils.UpdatePhoto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.ResponseDataUpdatedPhoto'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/mygram-api_photo_utils.ResponseMessage'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/mygram-api_photo_utils.ResponseMessage'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/mygram-api_photo_utils.ResponseMessage'
+      security:
+      - Bearer: []
+      summary: Update a photo
+      tags:
+      - photos
+  /socialmedias:
+    get:
+      consumes:
+      - application/json
+      description: Get all social media with authentication user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.ResponseDataFetchedSocialMedia'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/mygram-api_socialmedia_utils.ResponseMessage'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/mygram-api_socialmedia_utils.ResponseMessage'
+      security:
+      - Bearer: []
+      summary: Fetch all social media
+      tags:
+      - socialmedias
+    post:
+      consumes:
+      - application/json
+      description: Create and store a social media with authentication user
+      parameters:
+      - description: Add Social Media
+        in: body
+        name: json
+        required: true
+        schema:
+          $ref: '#/definitions/utils.AddSocialMedia'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/utils.ResponseDataAddedSocialMedia'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/mygram-api_socialmedia_utils.ResponseMessage'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/mygram-api_socialmedia_utils.ResponseMessage'
+      security:
+      - Bearer: []
+      summary: Add a social media
+      tags:
+      - socialmedias
+  /socialmedias/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a social media by id with authentication user
+      parameters:
+      - description: SocialMedia ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.ResponseMessageDeletedSocialMedia'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/mygram-api_socialmedia_utils.ResponseMessage'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/mygram-api_socialmedia_utils.ResponseMessage'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/mygram-api_socialmedia_utils.ResponseMessage'
+      security:
+      - Bearer: []
+      summary: Delete a social media
+      tags:
+      - socialmedias
+    put:
+      consumes:
+      - application/json
+      description: Update a social media by id with authentication user
+      parameters:
+      - description: SocialMedia ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update Social Media
+        in: body
+        name: json
+        required: true
+        schema:
+          $ref: '#/definitions/utils.UpdateSocialMedia'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.ResponseDataUpdatedSocialMedia'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/mygram-api_socialmedia_utils.ResponseMessage'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/mygram-api_socialmedia_utils.ResponseMessage'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/mygram-api_socialmedia_utils.ResponseMessage'
+      security:
+      - Bearer: []
+      summary: Update a social media
+      tags:
+      - socialmedias
+  /users:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a user with authentication user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.ResponseMessageDeletedUser'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/mygram-api_user_utils.ResponseMessage'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/mygram-api_user_utils.ResponseMessage'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/mygram-api_user_utils.ResponseMessage'
+      security:
+      - Bearer: []
+      summary: Delete a user
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: Update a user with authentication user
+      parameters:
+      - description: Update User
+        in: body
+        name: json
+        required: true
+        schema:
+          $ref: '#/definitions/utils.UpdateUser'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.ResponseDataUpdatedUser'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/mygram-api_user_utils.ResponseMessage'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/mygram-api_user_utils.ResponseMessage'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/mygram-api_user_utils.ResponseMessage'
+      security:
+      - Bearer: []
+      summary: Update a user
+      tags:
+      - users
+  /users/login:
+    post:
+      consumes:
+      - application/json
+      description: Authentication a user and retrieve a token
+      parameters:
+      - description: Login User
+        in: body
+        name: json
+        required: true
+        schema:
+          $ref: '#/definitions/utils.LoginUser'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.ResponseDataLoggedinUser'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/mygram-api_user_utils.ResponseMessage'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/mygram-api_user_utils.ResponseMessage'
+      summary: Login a user
+      tags:
+      - users
+  /users/register:
+    post:
+      consumes:
+      - application/json
+      description: create and store a user
+      parameters:
+      - description: Register User
+        in: body
+        name: json
+        required: true
+        schema:
+          $ref: '#/definitions/utils.RegisterUser'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/utils.ResponseDataRegisteredUser'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/mygram-api_user_utils.ResponseMessage'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/mygram-api_user_utils.ResponseMessage'
+      summary: Register a user
+      tags:
+      - users
+securityDefinitions:
+  Bearer:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
